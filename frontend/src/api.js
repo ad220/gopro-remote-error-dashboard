@@ -21,11 +21,11 @@ export const api = {
     list: (params) => apiFetch(`/admin/errors${toQuery(params)}`),
   },
   stats: {
-    get: () => apiFetch('/admin/stats'),
+    get: (params = {}) => apiFetch(`/admin/stats${toQuery(params)}`),
   },
   versions: {
-    list:   ()       => apiFetch('/admin/versions'),
+    list:   ()        => apiFetch('/admin/versions'),
     create: (version) => apiFetch('/admin/versions', { method: 'POST', body: JSON.stringify({ version }) }),
-    revoke: (id)     => apiFetch(`/admin/versions/${id}`, { method: 'DELETE' }),
+    revoke: (id)      => apiFetch(`/admin/versions/${id}`, { method: 'DELETE' }),
   },
 }

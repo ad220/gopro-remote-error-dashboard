@@ -49,7 +49,9 @@ BUILD_FLAGS: dict[int, str] = {
     0b11: "mobile_lowend",
 }
 
-# EC byte (bits 23-16) → category name
+# Normalised EC byte → category name.
+# ERR_CAM (0x80) and ERR_MSG (0x40) are detected via bit-mask, not exact match,
+# because their sub-codes are OR'd into the same EC byte (see _category()).
 ERROR_CATEGORIES: dict[int, str] = {
     0x80: "ERR_CAM",
     0x40: "ERR_MSG",
@@ -57,6 +59,36 @@ ERROR_CATEGORIES: dict[int, str] = {
     0x20: "ERR_COMM",
     0x10: "ERR_SYS",
     0x00: "ERR_NULL",
+}
+
+# Human labels for sub-type values, keyed by normalised category.
+#
+# ERR_CAM  subtype = ec_byte & 0x7F  →  SUB_CAM_* lives in bits 5-4,
+#                                       bits 3-0 are extra context.
+# ERR_MSG  subtype = ec_byte & 0x3F  →  SUB_MSG_* lives in bits 5-4,
+#                                       bits 3-0 are extra context.
+# ERR_COMM subtype = data   & 0xF0   →  direct match to SUB_BLE_* constants.
+SUBTYPE_LABELS: dict[int, dict[int, str]] = {
+    0x80: {
+        0x00: "CAM_ID",
+        0x10: "CAM_VAL",
+        0x20: "CAM_NULL",
+        0x30: "CAM_AVAIL",
+    },
+    0x40: {
+        0x00: "MSG_STATUS",
+        0x10: "MSG_QUERY",
+        0x20: "MSG_STRUCT",
+    },
+    0x20: {
+        0x00: "BLE_STATUS",
+        0x10: "BLE_CONN",
+        0x40: "BLE_NULLQ",
+        0x80: "BLE_BADSCD",
+        0x90: "BLE_WRITE",
+        0xA0: "BLE_TO",
+        0xF0: "BLE_API",
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -82,7 +114,10 @@ def _is_local(ip: str) -> bool:
 
 def require_local(request: Request) -> None:
     if not _is_local(request.client.host):
-        raise HTTPException(status_code=403, detail="Admin access is restricted to the local network")
+        raise HTTPException(
+            status_code=403,
+            detail="Admin access is restricted to the local network",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -97,38 +132,114 @@ def get_db():
         db.close()
 
 
-def _parse(code: int) -> dict:
-    """
-    Decode a 32-bit error code produced by ErrorManager.raise().
+# ---------------------------------------------------------------------------
+# Error-code parsing
+# ---------------------------------------------------------------------------
 
-    Bit layout (from ErrorManager.mc):
-      31-30  BF      build flags
-      29-24  GP ID   GoPro model index (6 bits)
-      23-16  EC      error category byte
-      15- 0  data    16-bit context payload (not stored, derivable from error_code)
+def _category(ec_byte: int) -> int:
     """
+    Return the normalised category stored in the DB.
+
+    ERR_CAM (0x80) and ERR_MSG (0x40) act as bit-masks: their sub-codes are
+    also shifted to bits 23-16 and OR'd in, so the EC byte looks like e.g.
+    0x97 = ERR_CAM | SUB_CAM_VAL | 0x07.  We detect them with bit-tests so
+    that any EC byte with bit 7 set maps to ERR_CAM, bit 6 to ERR_MSG, etc.
+    The remaining categories have fixed, non-overlapping EC bytes.
+    """
+    if ec_byte & 0x80:
+        return 0x80   # ERR_CAM
+    if ec_byte & 0x40:
+        return 0x40   # ERR_MSG
+    return ec_byte    # ERR_COMM/SYS/NULL/EXT — exact value
+
+
+def _subtype(category: int, ec_byte: int, data: int) -> int | None:
+    """
+    Extract the sub-type value for the three categories that define one.
+
+    ERR_CAM / ERR_MSG: remaining EC bits after the category mask.
+      The named SUB_* constant occupies bits 5-4; bits 3-0 are extra context.
+    ERR_COMM: upper nibble of data0 (bits 7-4), matching SUB_BLE_* constants.
+    """
+    if category == 0x80:
+        return ec_byte & 0x7F
+    if category == 0x40:
+        return ec_byte & 0x3F
+    if category == 0x20:
+        return data & 0xF0
+    return None
+
+
+def _parse(code: int) -> dict:
+    build_flags = (code >> 30) & 0x3
+    gopro_id    = (code >> 24) & 0x3F
+    ec_byte     = (code >> 16) & 0xFF
+    data        = code & 0xFFFF
+
+    category = _category(ec_byte)
+
     return {
-        "build_flags":    (code >> 30) & 0x3,
-        "gopro_id":       (code >> 24) & 0x3F,
-        "error_category": (code >> 16) & 0xFF,
+        "build_flags":    build_flags,
+        "gopro_id":       gopro_id,
+        "error_category": category,
+        "error_subtype":  _subtype(category, ec_byte, data),
     }
+
+
+def _subtype_label(category: int, subtype: int | None) -> str | None:
+    if subtype is None:
+        return None
+    labels = SUBTYPE_LABELS.get(category, {})
+    if category in (0x80, 0x40):
+        # Named sub-code is in bits 5-4; bits 3-0 are extra context
+        base  = subtype & 0x30
+        extra = subtype & 0x0F
+        name  = labels.get(base, f"0x{subtype:02X}")
+        return f"{name}+{extra:X}" if extra else name
+    # ERR_COMM: direct match
+    return labels.get(subtype, f"0x{subtype:02X}")
 
 
 def _enrich(e: ErrorReport) -> dict:
-    gid = e.gopro_id or 0
+    gid  = e.gopro_id or 0
     code = e.error_code
+    cat  = e.error_category or 0
     return {
-        "id":             e.id,
-        "timestamp":      e.timestamp.isoformat(),
-        "version":        e.version,
-        "error_code":     f"0x{code:08X}",
-        "error_hex":      f"0x{(code >> 16) & 0xFFFF:04X}_{code & 0xFFFF:04X}",
-        "build_flags":    BUILD_FLAGS.get(e.build_flags, f"0b{e.build_flags:02b}"),
-        "gopro_id":       e.gopro_id,
-        "gopro_model":    GOPRO_MODEL_NAMES[gid] if gid < len(GOPRO_MODEL_NAMES) else f"id:{gid}",
-        "error_category": ERROR_CATEGORIES.get(e.error_category, f"0x{e.error_category:02X}"),
-        "error_data":     f"0x{code & 0xFFFF:04X}",
+        "id":                   e.id,
+        "timestamp":            e.timestamp.isoformat(),
+        "version":              e.version,
+        "error_code":           f"0x{code:08X}",
+        "error_hex":            f"0x{(code >> 16) & 0xFFFF:04X}_{code & 0xFFFF:04X}",
+        "build_flags":          BUILD_FLAGS.get(e.build_flags, f"0b{e.build_flags:02b}"),
+        "gopro_id":             gid,
+        "gopro_model":          GOPRO_MODEL_NAMES[gid] if gid < len(GOPRO_MODEL_NAMES) else f"id:{gid}",
+        "error_category":       ERROR_CATEGORIES.get(cat, f"0x{cat:02X}"),
+        "error_subtype":        e.error_subtype,
+        "error_subtype_label":  _subtype_label(cat, e.error_subtype),
+        "error_data":           f"0x{code & 0xFFFF:04X}",
     }
+
+
+# ---------------------------------------------------------------------------
+# Shared filter helper
+# ---------------------------------------------------------------------------
+
+def _apply_category_filter(q, error_category: str):
+    """
+    Filter a query by error category name (e.g. "ERR_CAM") or raw hex ("0x80").
+    Works correctly after normalisation: all ERR_CAM rows share error_category=0x80.
+    """
+    cat_raw = next(
+        (k for k, v in ERROR_CATEGORIES.items() if v == error_category), None
+    )
+    if cat_raw is None:
+        try:
+            cat_raw = int(error_category, 16)
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail=f"Unknown error_category: {error_category!r}"
+            )
+    return q.filter(ErrorReport.error_category == cat_raw)
 
 
 # ---------------------------------------------------------------------------
@@ -145,6 +256,7 @@ _SORTABLE = {
     "timestamp":      ErrorReport.timestamp,
     "version":        ErrorReport.version,
     "error_category": ErrorReport.error_category,
+    "error_subtype":  ErrorReport.error_subtype,
     "gopro_id":       ErrorReport.gopro_id,
     "build_flags":    ErrorReport.build_flags,
 }
@@ -188,6 +300,7 @@ async def report_errors(
             build_flags    = p["build_flags"],
             gopro_id       = p["gopro_id"],
             error_category = p["error_category"],
+            error_subtype  = p["error_subtype"],
         ))
 
     db.commit()
@@ -201,7 +314,7 @@ async def report_errors(
 async def list_errors(
     db: Session = Depends(get_db),
     sort_by: str = "timestamp",
-    order: str   = "desc",
+    order:   str = "desc",
     version:        Optional[str] = None,
     error_category: Optional[str] = None,
     gopro_id:       Optional[int] = None,
@@ -213,17 +326,7 @@ async def list_errors(
     if version:
         q = q.filter(ErrorReport.version == version)
     if error_category:
-        # Accept both "ERR_COMM" and "0x20"
-        cat_raw = next(
-            (k for k, v in ERROR_CATEGORIES.items() if v == error_category),
-            None,
-        )
-        if cat_raw is None:
-            try:
-                cat_raw = int(error_category, 16)
-            except ValueError:
-                raise HTTPException(status_code=400, detail=f"Unknown error_category: {error_category!r}")
-        q = q.filter(ErrorReport.error_category == cat_raw)
+        q = _apply_category_filter(q, error_category)
     if gopro_id is not None:
         q = q.filter(ErrorReport.gopro_id == gopro_id)
 
@@ -242,12 +345,23 @@ async def list_errors(
 
 
 # ---------------------------------------------------------------------------
-# Admin — aggregated stats
+# Admin — stats (with optional filters)
 # ---------------------------------------------------------------------------
 
 @admin.get("/stats", summary="Aggregated counts for dashboard widgets")
-async def get_stats(db: Session = Depends(get_db)):
-    total = db.query(func.count(ErrorReport.id)).scalar()
+async def get_stats(
+    db: Session = Depends(get_db),
+    version:        Optional[str] = None,
+    error_category: Optional[str] = None,
+):
+    q = db.query(ErrorReport)
+
+    if version:
+        q = q.filter(ErrorReport.version == version)
+    if error_category:
+        q = _apply_category_filter(q, error_category)
+
+    total = q.with_entities(func.count(ErrorReport.id)).scalar()
 
     def _group(col, label_fn=None):
         rows = db.query(col, func.count(ErrorReport.id)).group_by(col).all()
