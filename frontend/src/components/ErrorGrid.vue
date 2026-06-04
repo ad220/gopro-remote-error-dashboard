@@ -92,7 +92,7 @@
     <div class="px-7 py-3 border-t border-zinc-800/60 flex items-center justify-between shrink-0">
       <span class="text-[11px] text-zinc-700">
         <template v-if="total > 0">
-          {{ offset + 1 }}–{{ Math.min(offset + LIMIT, total) }}
+          {{ offset + 1 }}-{{ Math.min(offset + LIMIT, total) }}
           <span class="text-zinc-800">of</span>
           {{ total.toLocaleString() }}
         </template>

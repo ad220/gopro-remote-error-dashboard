@@ -49,7 +49,7 @@ BUILD_FLAGS: dict[int, str] = {
     0b11: "mobile_lowend",
 }
 
-# EC byte (bits 23–16) → category name
+# EC byte (bits 23-16) → category name
 ERROR_CATEGORIES: dict[int, str] = {
     0x80: "ERR_CAM",
     0x40: "ERR_MSG",
@@ -102,10 +102,10 @@ def _parse(code: int) -> dict:
     Decode a 32-bit error code produced by ErrorManager.raise().
 
     Bit layout (from ErrorManager.mc):
-      31–30  BF      build flags
-      29–24  GP ID   GoPro model index (6 bits)
-      23–16  EC      error category byte
-      15– 0  data    16-bit context payload (not stored, derivable from error_code)
+      31-30  BF      build flags
+      29-24  GP ID   GoPro model index (6 bits)
+      23-16  EC      error category byte
+      15- 0  data    16-bit context payload (not stored, derivable from error_code)
     """
     return {
         "build_flags":    (code >> 30) & 0x3,

@@ -52,7 +52,7 @@ Returns a paginated, filterable list of every stored error.
 | `order`          | string | `desc`      | `asc` or `desc` |
 | `version`        | string | —           | Filter by app version, e.g. `v4.1` |
 | `error_category` | string | —           | `ERR_CAM`, `ERR_COMM`, `ERR_SYS`, `ERR_MSG`, `ERR_EXT`, `ERR_NULL`, or raw hex `0x20` |
-| `gopro_id`       | int    | —           | Filter by GoPro model index (0–21) |
+| `gopro_id`       | int    | —           | Filter by GoPro model index (0-21) |
 | `limit`          | int    | `100`       | |
 | `offset`         | int    | `0`         | |
 
@@ -102,15 +102,15 @@ Revokes an API key. Existing reports from that key are retained.
 From `ErrorManager.mc`:
 
 ```
-| 31–30 BF | 29–24 GP ID | 23–16 EC | 15–0 data |
+| 31-30 BF | 29-24 GP ID | 23-16 EC | 15-0 data |
 ```
 
 | Field | Bits  | Stored | Values |
 |-------|-------|--------|--------|
-| BF    | 31–30 | yes    | `00`=ble, `01`=mobile_highend, `11`=mobile_lowend |
-| GP ID | 29–24 | yes    | Index into `goproModelTable` in `CameraDelegate.mc` |
-| EC    | 23–16 | yes    | `0x80`=ERR_CAM, `0x40`=ERR_MSG, `0x20`=ERR_COMM, `0x10`=ERR_SYS, `0x00`=ERR_NULL |
-| data  | 15–0  | no     | Context-specific payload, derivable from the raw `error_code` |
+| BF    | 31-30 | yes    | `00`=ble, `01`=mobile_highend, `11`=mobile_lowend |
+| GP ID | 29-24 | yes    | Index into `goproModelTable` in `CameraDelegate.mc` |
+| EC    | 23-16 | yes    | `0x80`=ERR_CAM, `0x40`=ERR_MSG, `0x20`=ERR_COMM, `0x10`=ERR_SYS, `0x00`=ERR_NULL |
+| data  | 15-0  | no     | Context-specific payload, derivable from the raw `error_code` |
 
 ---
 
