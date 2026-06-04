@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent:     #E8430A;
+  --color-accent-dim: color-mix(in srgb, #E8430A 12%, transparent);
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* { font-family: 'IBM Plex Mono', monospace; }
+
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2d2d2d; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #444; }
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2352525b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px !important;
+}
