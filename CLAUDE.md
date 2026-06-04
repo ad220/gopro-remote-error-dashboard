@@ -182,3 +182,7 @@ are extracted as `(code >> 24) & 0x3F`, which matches what the tests expect.
   corresponding block in `seed_reports.py`.
 - **Schema change**: add column to `database.py`, add to `_parse()` insert, add to `_enrich()`
   if it should be returned, drop and recreate the DB.
+
+## Dashes syntax
+
+In this project, whether in code, comments, or documentation, never use em dashes ("—" or "–"), always use simple or in extreme cases double dash ("-" or "--")

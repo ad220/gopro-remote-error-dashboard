@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Seed script — creates API keys for v4.0/v4.1/v4.2 and sends 200 realistic
+Seed script -- creates API keys for v4.0/v4.1/v4.2 and sends 200 realistic
 error reports so the admin UI has something meaningful to display.
 
 Usage:
@@ -18,7 +18,7 @@ import urllib.error
 from collections import defaultdict
 
 # ---------------------------------------------------------------------------
-# Error code construction — mirrors ErrorManager.mc bit layout
+# Error code construction -- mirrors ErrorManager.mc bit layout
 # ---------------------------------------------------------------------------
 
 _BUILD_FLAGS = {"ble": 0b00, "mobile_highend": 0b01, "mobile_lowend": 0b11}

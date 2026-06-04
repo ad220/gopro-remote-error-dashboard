@@ -1,5 +1,5 @@
 """
-GoPro Remote — error reporting backend
+GoPro Remote -- error reporting backend
 """
 import ipaddress
 import secrets
@@ -150,7 +150,7 @@ def _category(ec_byte: int) -> int:
         return 0x80   # ERR_CAM
     if ec_byte & 0x40:
         return 0x40   # ERR_MSG
-    return ec_byte    # ERR_COMM/SYS/NULL/EXT — exact value
+    return ec_byte    # ERR_COMM/SYS/NULL/EXT -- exact value
 
 
 def _subtype(category: int, ec_byte: int, data: int) -> int | None:
@@ -246,7 +246,7 @@ def _apply_category_filter(q, error_category: str):
 # App & routers
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="GoPro Remote — Error Reporter")
+app = FastAPI(title="GPRMT - Error dashboard")
 init_db()
 
 # All /admin routes share the local-network dependency
@@ -274,7 +274,7 @@ class VersionCreate(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Public endpoint — callable from any network, authenticated by API key
+# Public endpoint -- callable from any network, authenticated by API key
 # ---------------------------------------------------------------------------
 
 @app.post("/report", status_code=204, summary="Submit error codes from the watch")
@@ -307,7 +307,7 @@ async def report_errors(
 
 
 # ---------------------------------------------------------------------------
-# Admin — errors grid
+# Admin -- errors grid
 # ---------------------------------------------------------------------------
 
 @admin.get("/errors", summary="Paginated, filterable error list")
@@ -345,7 +345,7 @@ async def list_errors(
 
 
 # ---------------------------------------------------------------------------
-# Admin — stats (with optional filters)
+# Admin -- stats (with optional filters)
 # ---------------------------------------------------------------------------
 
 @admin.get("/stats", summary="Aggregated counts for dashboard widgets")
@@ -386,7 +386,7 @@ async def get_stats(
 
 
 # ---------------------------------------------------------------------------
-# Admin — API key management
+# Admin -- API key management
 # ---------------------------------------------------------------------------
 
 @admin.get("/versions", summary="List all version API keys")
@@ -414,7 +414,7 @@ async def create_version(body: VersionCreate, db: Session = Depends(get_db)):
     return {
         "id":         record.id,
         "version":    record.version,
-        "key":        key,          # shown only once — store it now
+        "key":        key,          # shown only once -- store it now
         "created_at": record.created_at.isoformat(),
     }
 

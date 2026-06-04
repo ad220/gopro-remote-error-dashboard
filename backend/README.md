@@ -1,4 +1,4 @@
-# GoPro Remote — Error Reporting Server
+# GoPro Remote -- Error Reporting Server
 
 FastAPI backend that receives anonymous error reports from the Garmin widget and exposes an admin API for inspection.
 
@@ -32,7 +32,7 @@ X-API-Key: <key>
 }
 ```
 
-`errors` is the full contents of `ErrorManager.errorQueue` — a list of raw 32-bit codes.
+`errors` is the full contents of `ErrorManager.errorQueue` -- a list of raw 32-bit codes.
 
 **Response** `204 No Content`
 
@@ -50,9 +50,9 @@ Returns a paginated, filterable list of every stored error.
 |------------------|--------|-------------|-------------|
 | `sort_by`        | string | `timestamp` | `timestamp`, `version`, `error_category`, `gopro_id`, `build_flags` |
 | `order`          | string | `desc`      | `asc` or `desc` |
-| `version`        | string | —           | Filter by app version, e.g. `v4.1` |
-| `error_category` | string | —           | `ERR_CAM`, `ERR_COMM`, `ERR_SYS`, `ERR_MSG`, `ERR_EXT`, `ERR_NULL`, or raw hex `0x20` |
-| `gopro_id`       | int    | —           | Filter by GoPro model index (0-21) |
+| `version`        | string | --          | Filter by app version, e.g. `v4.1` |
+| `error_category` | string | --          | `ERR_CAM`, `ERR_COMM`, `ERR_SYS`, `ERR_MSG`, `ERR_EXT`, `ERR_NULL`, or raw hex `0x20` |
+| `gopro_id`       | int    | --          | Filter by GoPro model index (0-21) |
 | `limit`          | int    | `100`       | |
 | `offset`         | int    | `0`         | |
 
@@ -73,7 +73,7 @@ Each error in the response includes fields derived on the fly from the stored ra
 }
 ```
 
-`error_hex`, `gopro_model`, and `error_data` are not stored in the database — they are derived from `error_code` at read time.
+`error_hex`, `gopro_model`, and `error_data` are not stored in the database -- they are derived from `error_code` at read time.
 
 ### `GET /admin/stats`
 
@@ -85,7 +85,7 @@ Lists all API keys (including revoked ones).
 
 ### `POST /admin/versions`
 
-Creates an API key for a new app version. The raw key is shown only in this response — save it before distributing the build.
+Creates an API key for a new app version. The raw key is shown only in this response -- save it before distributing the build.
 
 ```json
 { "version": "v4.2" }

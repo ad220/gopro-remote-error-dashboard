@@ -27,10 +27,10 @@ class ErrorReport(Base):
     timestamp      = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     version        = Column(String(32), index=True)
 
-    # Raw 32-bit code — error_hex / error_data / gopro_model are derivable from this
+    # Raw 32-bit code -- error_hex / error_data / gopro_model are derivable from this
     error_code     = Column(Integer, nullable=False)
 
-    # Pre-extracted for sorting/filtering — see ErrorManager.mc for bit layout
+    # Pre-extracted for sorting/filtering -- see ErrorManager.mc for bit layout
     build_flags    = Column(Integer)                # bits 31-30
 
     gopro_id       = Column(Integer, index=True)    # bits 29-24

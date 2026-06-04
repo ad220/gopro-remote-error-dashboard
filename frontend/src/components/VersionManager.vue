@@ -27,10 +27,10 @@
         </button>
       </div>
 
-      <!-- New key display — shown once -->
+      <!-- New key display -- shown once -->
       <div v-if="newKey" class="mt-4">
         <div class="text-[10px] text-zinc-600 uppercase tracking-widest mb-1.5">
-          Key generated — copy it now, it won't be shown again
+          Key generated - copy it now, it won't be shown again
         </div>
         <div class="flex items-center gap-2">
           <code class="flex-1 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-[11px]"
