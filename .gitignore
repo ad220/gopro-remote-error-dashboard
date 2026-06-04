@@ -1,0 +1,8 @@
+# backend
+.venv/
+__pycache__/
+backend/errors.db
+
+# frontend
+node_modules/
+package-lock.json
