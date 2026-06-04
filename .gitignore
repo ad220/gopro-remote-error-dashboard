@@ -6,3 +6,4 @@ backend/errors.db
 # frontend
 node_modules/
 package-lock.json
+backend/static
