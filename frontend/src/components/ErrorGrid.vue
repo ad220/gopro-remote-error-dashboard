@@ -46,13 +46,12 @@
            class="flex items-center justify-center h-24 text-zinc-500 text-xs">
         no errors found
       </div>
-      <table v-else class="w-full text-xs border-collapse">
+      <table v-else class="w-auto text-xs border-collapse table-auto">
         <thead class="sticky top-0 z-10 bg-zinc-950">
           <tr class="border-b border-zinc-800/60">
             <th v-for="col in columns" :key="col.key ?? col.label"
-                class="px-4 py-2.5 text-left text-[10px] font-medium tracking-widest uppercase text-zinc-500 whitespace-nowrap"
+                class="px-8 py-2.5 text-left text-[10px] font-medium tracking-widest uppercase text-zinc-500 whitespace-nowrap"
                 :class="col.sortKey ? 'cursor-pointer hover:text-zinc-400 transition-colors select-none' : ''"
-                :style="col.width ? `width: ${col.width}` : ''"
                 @click="col.sortKey && toggleSort(col.sortKey)">
               {{ col.label }}
               <span v-if="sortBy === col.sortKey" class="ml-0.5 opacity-50">
@@ -64,28 +63,28 @@
         <tbody>
           <tr v-for="e in errors" :key="e.id"
               class="border-b border-zinc-900/80 hover:bg-zinc-900/80 transition-colors group text-slate-400 hover:text-slate-300">
-            <td class="px-4 py-2.5 whitespace-nowrap"
+            <td class="px-8 py-2.5 whitespace-nowrap"
                 :title="e.timestamp">
               {{ relativeTime(e.timestamp) }}
             </td>
-            <td class="px-4 py-2.5">{{ e.version }}</td>
-            <td class="px-4 py-2.5">{{ e.gopro_model }}</td>
-            <td class="px-4 py-2.5">
+            <td class="px-8 py-2.5">{{ e.version }}</td>
+            <td class="px-8 py-2.5">{{ e.gopro_model }}</td>
+            <td class="px-8 py-2.5">
               <span class="px-1.5 py-0.5 rounded text-[10px] font-medium border"
                     :class="categoryStyle(e.error_category)">
                 {{ e.error_category }}
               </span>
             </td>
-            <td class="px-4 py-2.5 text-[11px]">
+            <td class="px-8 py-2.5 text-[11px]">
               {{ e.error_subtype_label ?? '--' }}
             </td>
-            <td class="px-4 py-2.5">
+            <td class="px-8 py-2.5">
               <span class="px-1.5 py-0.5 rounded text-[10px] border"
                     :class="buildStyle(e.build_flags)">
                 {{ e.build_flags }}
               </span>
             </td>
-            <td class="px-4 py-2.5 font-medium tracking-wide text-zinc-300">{{ e.error_hex }}</td>
+            <td class="px-8 py-2.5 font-medium tracking-wide text-zinc-300">{{ e.error_hex }}</td>
           </tr>
         </tbody>
       </table>
@@ -151,13 +150,13 @@ const BUILD_STYLES = {
 }
 
 const columns = [
-  { sortKey: 'timestamp',      label: 'Time',     width: '12%' },
-  { sortKey: 'version',        label: 'Version',  width: '12%' },
-  { sortKey: 'gopro_id',       label: 'Camera',   width: '12%' },
-  { sortKey: 'error_category', label: 'Category', width: '12%' },
-  { sortKey: null,             label: 'Sub',      width: '12%' },
-  { sortKey: 'build_flags',    label: 'Build',    width: '12%' },
-  { sortKey: null,             label: 'Error',    width: '28%' },
+  { sortKey: 'timestamp',      label: 'Time' },
+  { sortKey: 'version',        label: 'Version' },
+  { sortKey: 'gopro_id',       label: 'Camera' },
+  { sortKey: 'error_category', label: 'Category' },
+  { sortKey: null,             label: 'Sub' },
+  { sortKey: 'build_flags',    label: 'Build' },
+  { sortKey: null,             label: 'Error' },
 ]
 
 const LIMIT = 50

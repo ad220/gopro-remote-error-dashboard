@@ -42,7 +42,7 @@
       </div>
 
       <!-- Stat cards -->
-      <div class="grid grid-cols-2 gap-4 max-w-3xl xl:grid-cols-4">
+      <div class="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatCard title="By Version"    :data="stats.by_version" />
         <StatCard title="By Category"   :data="stats.by_error_category" :style-fn="categoryStyle" />
         <StatCard title="By Camera"     :data="stats.by_gopro_model" />

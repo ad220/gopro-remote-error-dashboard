@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1 overflow-auto px-7 py-6 max-w-2xl">
+  <div class="flex-1 overflow-auto px-7 py-6">
 
     <!-- Header -->
     <div class="mb-7">
@@ -68,7 +68,7 @@
 
     <!-- Keys table -->
     <div class="border border-zinc-800/60 rounded-lg overflow-hidden">
-      <div class="px-4 py-2.5 bg-zinc-900/50 border-b border-zinc-800/60">
+      <div class="px-8 py-2.5 bg-zinc-900/50 border-b border-zinc-800/60">
         <span class="text-[10px] text-zinc-500 uppercase tracking-widest">Active keys</span>
       </div>
 
@@ -76,22 +76,22 @@
 
       <div v-else-if="!versions.length" class="px-4 py-6 text-xs text-zinc-500">No keys yet.</div>
 
-      <table v-else class="w-full text-xs">
+      <table v-else class="w-full text-xs table-auto">
         <thead>
           <tr class="border-b border-zinc-800/40">
-            <th class="px-4 py-2.5 text-left text-[10px] font-medium text-zinc-500 tracking-widest uppercase">Version</th>
-            <th class="px-4 py-2.5 text-left text-[10px] font-medium text-zinc-500 tracking-widest uppercase">Created</th>
-            <th class="px-4 py-2.5 text-left text-[10px] font-medium text-zinc-500 tracking-widest uppercase">Status</th>
-            <th class="px-4 py-2.5"></th>
+            <th class="px-8 py-2.5 text-left text-[10px] font-medium text-zinc-500 tracking-widest uppercase">Version</th>
+            <th class="px-8 py-2.5 text-left text-[10px] font-medium text-zinc-500 tracking-widest uppercase">Created</th>
+            <th class="px-8 py-2.5 text-left text-[10px] font-medium text-zinc-500 tracking-widest uppercase">Status</th>
+            <th class="px-8 py-2.5 w-full"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="v in versions" :key="v.id"
               class="border-b border-zinc-900/60 last:border-0"
               :class="!v.active ? 'opacity-40' : ''">
-            <td class="px-4 py-3 text-slate-400">{{ v.version }}</td>
-            <td class="px-4 py-3 text-slate-400">{{ formatDate(v.created_at) }}</td>
-            <td class="px-4 py-3">
+            <td class="px-8 py-3 text-slate-400">{{ v.version }}</td>
+            <td class="px-8 py-3 text-slate-400 whitespace-nowrap">{{ formatDate(v.created_at) }}</td>
+            <td class="px-8 py-3">
               <span class="text-[10px] px-1.5 py-0.5 rounded border"
                     :class="v.active
                       ? 'text-teal-400 bg-teal-500/10 border-teal-500/20'
@@ -99,9 +99,9 @@
                 {{ v.active ? 'active' : 'revoked' }}
               </span>
             </td>
-            <td class="px-4 py-3 text-right">
+            <td class="px-8 py-3 text-right">
               <button v-if="v.active" @click="revoke(v.id)"
-                      class="text-[11px] text-zinc-500 hover:text-rose-400 transition-colors">
+                      class="text-[11px] text-zinc-500 hover:text-orange-500 transition-colors">
                 revoke
               </button>
             </td>

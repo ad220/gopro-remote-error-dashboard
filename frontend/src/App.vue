@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-zinc-950 text-zinc-300 overflow-hidden">
+  <div class="flex h-screen bg-zinc-950 text-zinc-300 overflow-hidden" style="height: calc(100vh / 1.2)">
 
     <!-- Sidebar -->
     <aside class="w-56 shrink-0 bg-zinc-950 border-r border-zinc-800/60 flex flex-col">

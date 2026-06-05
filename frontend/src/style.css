@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+html { zoom: 1.2; }
+
 @theme {
   --color-accent:     #E8430A;
   --color-accent-dim: color-mix(in srgb, #E8430A 12%, transparent);

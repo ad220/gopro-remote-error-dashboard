@@ -1,4 +1,4 @@
-from fastapi import StaticFiles
+# from fastapi import StaticFiles
 from api import app
 
 if __name__ == "__main__":
