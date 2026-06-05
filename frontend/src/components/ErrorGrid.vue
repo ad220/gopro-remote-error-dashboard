@@ -5,10 +5,10 @@
     <div class="px-7 py-4 border-b border-zinc-800/60 flex items-center justify-between shrink-0">
       <div class="flex items-center gap-4">
         <h1 class="text-zinc-100 text-xs font-semibold tracking-widest uppercase">Error Log</h1>
-        <span class="text-zinc-700 text-xs">{{ total.toLocaleString() }} reports</span>
+        <span class="text-zinc-500 text-xs">{{ total.toLocaleString() }} reports</span>
       </div>
       <button @click="fetchErrors"
-              class="text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors flex items-center gap-1.5">
+              class="text-[11px] text-zinc-500 hover:text-zinc-400 transition-colors flex items-center gap-1.5">
         <span :class="loading ? 'animate-spin inline-block' : ''">↻</span>
         refresh
       </button>
@@ -31,7 +31,7 @@
         </option>
       </select>
       <button v-if="hasFilters" @click="clearFilters"
-              class="ml-2 text-[11px] text-zinc-600 hover:text-accent transition-colors">
+              class="ml-2 text-[11px] text-zinc-500 hover:text-accent transition-colors">
         ✕ clear
       </button>
     </div>
@@ -39,19 +39,20 @@
     <!-- Table -->
     <div class="flex-1 overflow-auto">
       <div v-if="loading && !errors.length"
-           class="flex items-center justify-center h-24 text-zinc-700 text-xs">
+           class="flex items-center justify-center h-24 text-zinc-500 text-xs">
         loading...
       </div>
       <div v-else-if="!errors.length"
-           class="flex items-center justify-center h-24 text-zinc-700 text-xs">
+           class="flex items-center justify-center h-24 text-zinc-500 text-xs">
         no errors found
       </div>
       <table v-else class="w-full text-xs border-collapse">
         <thead class="sticky top-0 z-10 bg-zinc-950">
           <tr class="border-b border-zinc-800/60">
             <th v-for="col in columns" :key="col.key ?? col.label"
-                class="px-4 py-2.5 text-left text-[10px] font-medium tracking-widest uppercase text-zinc-600 whitespace-nowrap"
+                class="px-4 py-2.5 text-left text-[10px] font-medium tracking-widest uppercase text-zinc-500 whitespace-nowrap"
                 :class="col.sortKey ? 'cursor-pointer hover:text-zinc-400 transition-colors select-none' : ''"
+                :style="col.width ? `width: ${col.width}` : ''"
                 @click="col.sortKey && toggleSort(col.sortKey)">
               {{ col.label }}
               <span v-if="sortBy === col.sortKey" class="ml-0.5 opacity-50">
@@ -62,27 +63,29 @@
         </thead>
         <tbody>
           <tr v-for="e in errors" :key="e.id"
-              class="border-b border-zinc-900/60 hover:bg-zinc-900/30 transition-colors group">
-            <td class="px-4 py-2.5 text-zinc-600 group-hover:text-zinc-500 whitespace-nowrap"
+              class="border-b border-zinc-900/80 hover:bg-zinc-900/80 transition-colors group text-slate-400 hover:text-slate-300">
+            <td class="px-4 py-2.5 whitespace-nowrap"
                 :title="e.timestamp">
               {{ relativeTime(e.timestamp) }}
             </td>
-            <td class="px-4 py-2.5 text-zinc-500">{{ e.version }}</td>
-            <td class="px-4 py-2.5 font-medium tracking-wide text-accent">{{ e.error_hex }}</td>
+            <td class="px-4 py-2.5">{{ e.version }}</td>
+            <td class="px-4 py-2.5">{{ e.gopro_model }}</td>
             <td class="px-4 py-2.5">
               <span class="px-1.5 py-0.5 rounded text-[10px] font-medium border"
                     :class="categoryStyle(e.error_category)">
                 {{ e.error_category }}
               </span>
             </td>
-            <td class="px-4 py-2.5 text-zinc-500">{{ e.gopro_model }}</td>
+            <td class="px-4 py-2.5 text-[11px]">
+              {{ e.error_subtype_label ?? '--' }}
+            </td>
             <td class="px-4 py-2.5">
               <span class="px-1.5 py-0.5 rounded text-[10px] border"
                     :class="buildStyle(e.build_flags)">
                 {{ e.build_flags }}
               </span>
             </td>
-            <td class="px-4 py-2.5 text-zinc-600">{{ e.error_data }}</td>
+            <td class="px-4 py-2.5 font-medium tracking-wide text-zinc-300">{{ e.error_hex }}</td>
           </tr>
         </tbody>
       </table>
@@ -90,22 +93,22 @@
 
     <!-- Pagination -->
     <div class="px-7 py-3 border-t border-zinc-800/60 flex items-center justify-between shrink-0">
-      <span class="text-[11px] text-zinc-700">
+      <span class="text-[11px] text-zinc-500">
         <template v-if="total > 0">
           {{ offset + 1 }}-{{ Math.min(offset + LIMIT, total) }}
-          <span class="text-zinc-800">of</span>
+          <span class="text-zinc-500">of</span>
           {{ total.toLocaleString() }}
         </template>
       </span>
       <div class="flex gap-1.5">
         <button :disabled="offset === 0" @click="offset = Math.max(0, offset - LIMIT)"
-                class="px-3 py-1 text-[11px] rounded border border-zinc-800 text-zinc-600
+                class="px-3 py-1 text-[11px] rounded border border-zinc-800 text-zinc-500
                        hover:text-zinc-300 hover:border-zinc-700
                        disabled:opacity-25 disabled:cursor-not-allowed transition-colors">
           ← prev
         </button>
         <button :disabled="offset + LIMIT >= total" @click="offset += LIMIT"
-                class="px-3 py-1 text-[11px] rounded border border-zinc-800 text-zinc-600
+                class="px-3 py-1 text-[11px] rounded border border-zinc-800 text-zinc-500
                        hover:text-zinc-300 hover:border-zinc-700
                        disabled:opacity-25 disabled:cursor-not-allowed transition-colors">
           next →
@@ -148,13 +151,13 @@ const BUILD_STYLES = {
 }
 
 const columns = [
-  { sortKey: 'timestamp',      label: 'Time' },
-  { sortKey: 'version',        label: 'Version' },
-  { sortKey: null,             label: 'Error' },
-  { sortKey: 'error_category', label: 'Category' },
-  { sortKey: 'gopro_id',       label: 'Camera' },
-  { sortKey: 'build_flags',    label: 'Build' },
-  { sortKey: null,             label: 'Data' },
+  { sortKey: 'timestamp',      label: 'Time',     width: '12%' },
+  { sortKey: 'version',        label: 'Version',  width: '12%' },
+  { sortKey: 'gopro_id',       label: 'Camera',   width: '12%' },
+  { sortKey: 'error_category', label: 'Category', width: '12%' },
+  { sortKey: null,             label: 'Sub',      width: '12%' },
+  { sortKey: 'build_flags',    label: 'Build',    width: '12%' },
+  { sortKey: null,             label: 'Error',    width: '28%' },
 ]
 
 const LIMIT = 50

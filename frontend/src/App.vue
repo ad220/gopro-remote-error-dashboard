@@ -10,7 +10,7 @@
                 style="background: #E8430A">GP</span>
           <div>
             <div class="text-zinc-100 text-xs font-semibold tracking-wide">Error Reports</div>
-            <div class="text-zinc-600 text-[10px] mt-0.5">admin console</div>
+            <div class="text-zinc-500 text-[10px] mt-0.5">admin console</div>
           </div>
         </div>
       </div>
@@ -28,7 +28,7 @@
           <span class="text-[11px] opacity-70">{{ item.icon }}</span>
           {{ item.label }}
           <span v-if="item.id === 'errors' && errorCount !== null"
-                class="ml-auto text-[10px] text-zinc-600">
+                class="ml-auto text-[10px] text-zinc-500">
             {{ errorCount.toLocaleString() }}
           </span>
         </button>
@@ -36,9 +36,9 @@
 
       <!-- Footer -->
       <div class="px-5 py-4 border-t border-zinc-800/60">
-        <div class="text-[10px] text-zinc-700 leading-relaxed">
+        <div class="text-[10px] text-zinc-500 leading-relaxed">
           Local network only<br>
-          <span class="text-zinc-800">gopro-remote v0.1</span>
+          <span class="text-zinc-500">gopro-remote v0.1</span>
         </div>
       </div>
     </aside>

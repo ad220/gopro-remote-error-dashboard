@@ -1,7 +1,7 @@
 <template>
   <div class="bg-zinc-900/50 border border-zinc-800/60 rounded-lg p-4">
-    <div class="text-[10px] text-zinc-600 uppercase tracking-widest mb-3">{{ title }}</div>
-    <div v-if="rows.length === 0" class="text-[11px] text-zinc-700">-</div>
+    <div class="text-[10px] text-zinc-500 uppercase tracking-widest mb-3">{{ title }}</div>
+    <div v-if="rows.length === 0" class="text-[11px] text-zinc-500">-</div>
     <div v-else class="space-y-1.5">
       <div v-for="[key, count] in rows" :key="key"
            class="flex items-center justify-between gap-3">
@@ -15,7 +15,7 @@
             <div class="h-full rounded-full bg-zinc-600"
                  :style="{ width: barWidth(count) + '%' }"/>
           </div>
-          <span class="text-[11px] text-zinc-600 w-8 text-right tabular-nums">
+          <span class="text-[11px] text-zinc-500 w-8 text-right tabular-nums">
             {{ count.toLocaleString() }}
           </span>
         </div>

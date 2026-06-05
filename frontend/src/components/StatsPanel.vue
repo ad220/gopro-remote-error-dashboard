@@ -4,7 +4,7 @@
     <!-- Header -->
     <div class="mb-5">
       <h1 class="text-zinc-100 text-xs font-semibold tracking-widest uppercase mb-1">Statistics</h1>
-      <p class="text-zinc-700 text-[11px]">Aggregated counts across all reports</p>
+      <p class="text-zinc-500 text-[11px]">Aggregated counts across all reports</p>
     </div>
 
     <!-- Filter bar -->
@@ -18,22 +18,22 @@
         <option v-for="cat in ERROR_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
       </select>
       <button v-if="hasFilters" @click="clearFilters"
-              class="text-[11px] text-zinc-600 hover:text-accent transition-colors ml-1">
+              class="text-[11px] text-zinc-500 hover:text-accent transition-colors ml-1">
         ✕ clear
       </button>
-      <span class="ml-auto text-[11px] text-zinc-700">
+      <span class="ml-auto text-[11px] text-zinc-500">
         {{ stats ? stats.total_reports.toLocaleString() + ' reports' : '' }}
       </span>
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="text-zinc-700 text-xs">loading...</div>
+    <div v-if="loading" class="text-zinc-500 text-xs">loading...</div>
 
     <template v-else-if="stats">
 
       <!-- Total -->
       <div class="mb-7">
-        <div class="text-[10px] text-zinc-600 uppercase tracking-widest mb-1">
+        <div class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">
           Total{{ hasFilters ? ' (filtered)' : '' }}
         </div>
         <div class="text-4xl font-light text-zinc-100 tracking-tight">
@@ -51,7 +51,7 @@
 
     </template>
 
-    <div v-else class="text-zinc-700 text-xs">No data available.</div>
+    <div v-else class="text-zinc-500 text-xs">No data available.</div>
   </div>
 </template>
 
