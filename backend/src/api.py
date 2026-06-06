@@ -220,22 +220,17 @@ def _subtype_label(category: int, subtype: int | None) -> str | None:
 
 
 def _enrich(e: ErrorReport) -> dict:
-    gid  = e.gopro_id or 0
     code = e.error_code
-    cat  = e.error_category or 0
     return {
-        "id":                   e.id,
-        "timestamp":            e.timestamp.isoformat(),
-        "version":              e.version,
-        "error_code":           f"0x{code:08X}",
-        "error_hex":            f"0x{(code >> 16) & 0xFFFF:04X}_{code & 0xFFFF:04X}",
-        "build_flags":          BUILD_FLAGS.get(e.build_flags, f"0b{e.build_flags:02b}"),
-        "gopro_id":             gid,
-        "gopro_model":          GOPRO_MODEL_NAMES[gid] if gid < len(GOPRO_MODEL_NAMES) else f"id:{gid}",
-        "error_category":       ERROR_CATEGORIES.get(cat, f"0x{cat:02X}"),
-        "error_subtype":        e.error_subtype,
-        "error_subtype_label":  _subtype_label(cat, e.error_subtype),
-        "error_index":          e.error_index,
+        "id":            e.id,
+        "timestamp":     e.timestamp.isoformat(),
+        "version":       e.version,
+        "error_hex":     f"0x{(code >> 16) & 0xFFFF:04X}_{code & 0xFFFF:04X}",
+        "build_flags":   e.build_flags,
+        "gopro_id":      e.gopro_id or 0,
+        "error_category": e.error_category or 0,
+        "error_subtype": e.error_subtype,
+        "error_index":   e.error_index,
     }
 
 
