@@ -183,6 +183,22 @@ are extracted as `(code >> 24) & 0x3F`, which matches what the tests expect.
 - **Schema change**: add column to `database.py`, add to `_parse()` insert, add to `_enrich()`
   if it should be returned, drop and recreate the DB.
 
+
 ## Dashes syntax
 
 In this project, whether in code, comments, or documentation, never use em dashes ("—" or "–"), always use simple or in extreme cases double dash ("-" or "--")
+
+
+## Sub-type extraction -- precise bit layout
+
+| Category | Sub-category bits       | Index bits        | Sub-category formula | Index formula    |
+|----------|-------------------------|-------------------|----------------------|------------------|
+| ERR_CAM  | 6-4 (3 bits)            | 3-0 (4 bits)      | `ec_byte & 0x70`     | `ec_byte & 0x0F` |
+| ERR_MSG  | 5-4 (2 bits)            | 3-0 (4 bits)      | `ec_byte & 0x30`     | `ec_byte & 0x0F` |
+| ERR_COMM | data0[7-4] (4 bits)     | data0[3-0] (4 b)  | `data & 0xF0`        | `data & 0x0F`    |
+| ERR_SYS  | --                      | data0 (8 bits)    | --                   | `data & 0x0F`    |
+| ERR_NULL | --                      | data0 (8 bits)    | --                   | `data & 0xFF`    |
+
+Bits 6 (ERR_CAM) are reserved for future use, currently always 0.
+The index identifies which specific `EM.raise()` call site triggered the error.
+Both `error_subtype` and `error_index` are stored separately in the DB.

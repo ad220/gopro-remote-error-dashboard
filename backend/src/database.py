@@ -45,6 +45,8 @@ class ErrorReport(Base):
     #   ERR_COMM → data & 0xF0     (upper nibble of data0, matches SUB_BLE_*)
     error_subtype  = Column(Integer, index=True, nullable=True)
 
+    error_index    = Column(Integer, index=True, nullable=True)
+
 
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)

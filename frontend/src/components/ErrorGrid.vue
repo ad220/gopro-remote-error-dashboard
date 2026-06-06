@@ -20,14 +20,21 @@
         <option value="">All versions</option>
         <option v-for="v in availableVersions" :key="v" :value="v">{{ v }}</option>
       </select>
-      <select v-model="filters.error_category" class="filter-select">
-        <option value="">All categories</option>
-        <option v-for="cat in ERROR_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
-      </select>
       <select v-model="filters.gopro_id" class="filter-select">
         <option value="">All cameras</option>
         <option v-for="(name, idx) in GOPRO_MODELS" :key="idx" :value="String(idx)">
           {{ name }}
+        </option>
+      </select>
+      <select v-model="filters.error_category" class="filter-select">
+        <option value="">All categories</option>
+        <option v-for="cat in ERROR_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
+      </select>
+      <select v-model="filters.error_subtype" class="filter-select"
+              :disabled="!filters.error_category">
+        <option value="">All subtypes</option>
+        <option v-for="opt in subtypeOptions" :key="opt.value" :value="String(opt.value)">
+          {{ opt.label }}
         </option>
       </select>
       <button v-if="hasFilters" @click="clearFilters"
@@ -75,8 +82,17 @@
                 {{ e.error_category }}
               </span>
             </td>
-            <td class="px-8 py-2.5 text-[11px]">
-              {{ e.error_subtype_label ?? '--' }}
+            <td class="px-8 py-2.5">
+              <span v-if="e.error_subtype_label"
+                    class="px-1.5 py-0.5 rounded text-[10px] border"
+                    :class="subtypeStyle(e.error_subtype_label)">
+                {{ e.error_subtype_label }}
+              </span>
+              <span v-else></span>
+            </td>
+            <td class="px-8 py-2.5 tabular-nums">
+              <span v-if="e.error_index !== null">{{ e.error_index }}</span>
+              <span v-else></span>
             </td>
             <td class="px-8 py-2.5">
               <span class="px-1.5 py-0.5 rounded text-[10px] border"
@@ -143,6 +159,46 @@ const CATEGORY_STYLES = {
   ERR_EXT:  'bg-zinc-500/10 text-zinc-500 border-zinc-500/20',
 }
 
+const SUBTYPE_OPTIONS = {
+  ERR_CAM:  [
+    { label: 'CAM_ID',    value: 0x00 },
+    { label: 'CAM_VAL',   value: 0x10 },
+    { label: 'CAM_NULL',  value: 0x20 },
+    { label: 'CAM_AVAIL', value: 0x30 },
+  ],
+  ERR_MSG:  [
+    { label: 'MSG_STATUS', value: 0x00 },
+    { label: 'MSG_QUERY',  value: 0x10 },
+    { label: 'MSG_STRUCT', value: 0x20 },
+  ],
+  ERR_COMM: [
+    { label: 'BLE_STATUS', value: 0x00 },
+    { label: 'BLE_CONN',   value: 0x10 },
+    { label: 'BLE_NULLQ',  value: 0x40 },
+    { label: 'BLE_BADSCD', value: 0x80 },
+    { label: 'BLE_WRITE',  value: 0x90 },
+    { label: 'BLE_TO',     value: 0xA0 },
+    { label: 'BLE_API',    value: 0xF0 },
+  ],
+}
+
+const SUBTYPE_STYLES = {
+  CAM_ID:     'bg-yellow-500/10  text-yellow-400  border-yellow-500/20',
+  CAM_VAL:    'bg-orange-500/10  text-orange-400  border-orange-500/20',
+  CAM_NULL:   'bg-red-500/10     text-red-400     border-red-500/20',
+  CAM_AVAIL:  'bg-rose-500/10    text-rose-400    border-rose-500/20',
+  MSG_STATUS: 'bg-purple-500/10  text-purple-400  border-purple-500/20',
+  MSG_QUERY:  'bg-violet-500/10  text-violet-400  border-violet-500/20',
+  MSG_STRUCT: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
+  BLE_STATUS: 'bg-cyan-500/10    text-cyan-400    border-cyan-500/20',
+  BLE_CONN:   'bg-blue-500/10    text-blue-400    border-blue-500/20',
+  BLE_NULLQ:  'bg-indigo-500/10  text-indigo-400  border-indigo-500/20',
+  BLE_BADSCD: 'bg-teal-500/10    text-teal-400    border-teal-500/20',
+  BLE_WRITE:  'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  BLE_TO:     'bg-green-500/10   text-green-400   border-green-500/20',
+  BLE_API:    'bg-lime-500/10    text-lime-400    border-lime-500/20',
+}
+
 const BUILD_STYLES = {
   ble:            'bg-teal-500/10 text-teal-400 border-teal-500/20',
   mobile_highend: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -154,7 +210,8 @@ const columns = [
   { sortKey: 'version',        label: 'Version' },
   { sortKey: 'gopro_id',       label: 'Camera' },
   { sortKey: 'error_category', label: 'Category' },
-  { sortKey: null,             label: 'Sub' },
+  { sortKey: 'error_subtype',  label: 'Sub' },
+  { sortKey: 'error_index',    label: 'Index' },
   { sortKey: 'build_flags',    label: 'Build' },
   { sortKey: null,             label: 'Error' },
 ]
@@ -173,8 +230,12 @@ const order            = ref('desc')
 const offset           = ref(0)
 const availableVersions = ref([])
 
-const filters = reactive({ version: '', error_category: '', gopro_id: '' })
+const filters = reactive({ version: '', error_category: '', error_subtype: '', gopro_id: '' })
 const hasFilters = computed(() => Object.values(filters).some(v => v !== ''))
+
+const subtypeOptions = computed(() => SUBTYPE_OPTIONS[filters.error_category] ?? [])
+
+watch(() => filters.error_category, () => { filters.error_subtype = '' })
 
 // --- Fetch ---
 
@@ -231,6 +292,7 @@ function toggleSort(key) {
 function clearFilters() {
   filters.version        = ''
   filters.error_category = ''
+  filters.error_subtype  = ''
   filters.gopro_id       = ''
 }
 
@@ -238,6 +300,10 @@ function clearFilters() {
 
 function categoryStyle(cat) {
   return CATEGORY_STYLES[cat] ?? 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+}
+
+function subtypeStyle(label) {
+  return SUBTYPE_STYLES[label] ?? 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
 }
 
 function buildStyle(flags) {
@@ -260,5 +326,9 @@ function relativeTime(iso) {
   @apply bg-zinc-900 border border-zinc-800 rounded text-[11px] text-zinc-400
          px-3 py-1.5 focus:outline-none focus:border-zinc-600 transition-colors
          hover:border-zinc-700 cursor-pointer;
+}
+
+.filter-select:disabled {
+  @apply opacity-30 cursor-not-allowed pointer-events-none;
 }
 </style>

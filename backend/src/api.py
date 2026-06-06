@@ -162,11 +162,29 @@ def _subtype(category: int, ec_byte: int, data: int) -> int | None:
     ERR_COMM: upper nibble of data0 (bits 7-4), matching SUB_BLE_* constants.
     """
     if category == 0x80:
-        return ec_byte & 0x7F
+        return ec_byte & 0x70
     if category == 0x40:
-        return ec_byte & 0x3F
+        return ec_byte & 0x30
     if category == 0x20:
         return data & 0xF0
+    return None
+
+
+def _subtype_label(category: int, subtype: int | None) -> str | None:
+    if subtype is None:
+        return None
+    labels = SUBTYPE_LABELS.get(category, {})
+    return labels.get(subtype, f"0x{subtype:02X}")
+
+
+
+def _index(category: int, ec_byte: int, data: int) -> int | None:
+    if category in (0x80, 0x40):
+        return ec_byte & 0x0F
+    if category in (0x20, 0x10):
+        return data & 0x0F
+    if category == 0x00:
+        return data & 0xFF
     return None
 
 
@@ -179,10 +197,11 @@ def _parse(code: int) -> dict:
     category = _category(ec_byte)
 
     return {
-        "build_flags":    build_flags,
-        "gopro_id":       gopro_id,
-        "error_category": category,
-        "error_subtype":  _subtype(category, ec_byte, data),
+        "build_flags":      build_flags,
+        "gopro_id":         gopro_id,
+        "error_category":   category,
+        "error_subtype":    _subtype(category, ec_byte, data),
+        "error_index":      _index(category, ec_byte, data),
     }
 
 
@@ -216,7 +235,7 @@ def _enrich(e: ErrorReport) -> dict:
         "error_category":       ERROR_CATEGORIES.get(cat, f"0x{cat:02X}"),
         "error_subtype":        e.error_subtype,
         "error_subtype_label":  _subtype_label(cat, e.error_subtype),
-        "error_data":           f"0x{code & 0xFFFF:04X}",
+        "error_index":          e.error_index,
     }
 
 
@@ -253,12 +272,13 @@ init_db()
 admin = APIRouter(prefix="/admin", dependencies=[Depends(require_local)])
 
 _SORTABLE = {
-    "timestamp":      ErrorReport.timestamp,
-    "version":        ErrorReport.version,
-    "error_category": ErrorReport.error_category,
-    "error_subtype":  ErrorReport.error_subtype,
-    "gopro_id":       ErrorReport.gopro_id,
-    "build_flags":    ErrorReport.build_flags,
+    "timestamp":        ErrorReport.timestamp,
+    "version":          ErrorReport.version,
+    "error_category":   ErrorReport.error_category,
+    "error_subtype":    ErrorReport.error_subtype,
+    "error_index":      ErrorReport.error_index,
+    "gopro_id":         ErrorReport.gopro_id,
+    "build_flags":      ErrorReport.build_flags,
 }
 
 # ---------------------------------------------------------------------------
@@ -295,12 +315,13 @@ async def report_errors(
     for code in body.errors:
         p = _parse(code)
         db.add(ErrorReport(
-            version        = key_record.version,
-            error_code     = code,
-            build_flags    = p["build_flags"],
-            gopro_id       = p["gopro_id"],
-            error_category = p["error_category"],
-            error_subtype  = p["error_subtype"],
+            version         = key_record.version,
+            error_code      = code,
+            build_flags     = p["build_flags"],
+            gopro_id        = p["gopro_id"],
+            error_category  = p["error_category"],
+            error_subtype   = p["error_subtype"],
+            error_index     = p["error_index"],
         ))
 
     db.commit()
@@ -317,6 +338,7 @@ async def list_errors(
     order:   str = "desc",
     version:        Optional[str] = None,
     error_category: Optional[str] = None,
+    error_subtype:  Optional[int] = None,
     gopro_id:       Optional[int] = None,
     limit:  int = 100,
     offset: int = 0,
@@ -327,6 +349,8 @@ async def list_errors(
         q = q.filter(ErrorReport.version == version)
     if error_category:
         q = _apply_category_filter(q, error_category)
+    if error_subtype is not None:
+        q = q.filter(ErrorReport.error_subtype == error_subtype)
     if gopro_id is not None:
         q = q.filter(ErrorReport.gopro_id == gopro_id)
 
