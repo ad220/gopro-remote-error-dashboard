@@ -50,9 +50,11 @@
         <!-- MonkeyC snippet -->
         <div>
           <div class="text-[10px] text-zinc-500 mb-1">MonkeyC bytearray</div>
-          <div class="flex items-center gap-2">
-            <code class="flex-1 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-[11px] text-slate-400 whitespace-pre"
-                  style="word-break: break-all">{{ monkeyCSnippet }}</code>
+          <div class="flex items-start gap-2">
+            <code class="flex-1 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-[11px]
+                        text-slate-400 whitespace-pre overflow-x-auto">
+              {{ monkeyCSnippet }}
+            </code>
             <button @click="copyKey(monkeyCSnippet)"
                     class="px-3 py-2 rounded border border-zinc-800 text-[11px] text-zinc-500
                           hover:text-zinc-300 hover:border-zinc-600 transition-colors shrink-0">

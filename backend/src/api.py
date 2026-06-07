@@ -292,7 +292,7 @@ class VersionCreate(BaseModel):
 # Public endpoint -- callable from any network, authenticated by API key
 # ---------------------------------------------------------------------------
 
-@app.post("/report", status_code=204, summary="Submit error codes from the watch")
+@app.post("/report", summary="Submit error codes from the watch")
 async def report_errors(
     request: Request,
     body: ReportBody,
