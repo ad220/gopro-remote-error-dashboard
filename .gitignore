@@ -7,3 +7,4 @@ backend/errors.db
 node_modules/
 package-lock.json
 backend/static
+.env

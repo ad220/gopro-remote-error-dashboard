@@ -51,7 +51,7 @@
         <div>
           <div class="text-[10px] text-zinc-500 mb-1">MonkeyC bytearray</div>
           <div class="flex items-center gap-2">
-            <code class="flex-1 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-[11px] text-slate-400"
+            <code class="flex-1 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-[11px] text-slate-400 whitespace-pre"
                   style="word-break: break-all">{{ monkeyCSnippet }}</code>
             <button @click="copyKey(monkeyCSnippet)"
                     class="px-3 py-2 rounded border border-zinc-800 text-[11px] text-zinc-500
@@ -117,6 +117,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '../api.js'
 
+console.log(import.meta.env)
+
 const versions   = ref([])
 const loading    = ref(false)
 const creating   = ref(false)
@@ -167,8 +169,15 @@ async function revoke(id) {
 
 const monkeyCSnippet = computed(() => {
   if (!newKey.value) return ''
-  const bytes = newKey.value.match(/.{2}/g).map(b => `0x${b}`)
-  return `const API_KEY = [${bytes.join(', ')}]b;`
+  const keyBytes = newKey.value.match(/.{2}/g).map(b => parseInt(b, 16))
+  const url = import.meta.env.VITE_API_URL || ''
+  const urlBytes = Array.from(new TextEncoder().encode(url))
+  const xored = urlBytes.map((b, i) => b ^ keyBytes[i % keyBytes.length])
+
+  var keyLine = `const API_KEY = [${keyBytes.map(b => `0x${b.toString(16).padStart(2, '0').toUpperCase()}`).join(', ')}]b;`
+  var urlLine = `const API_URL = [${xored.map(b => `0x${b.toString(16).padStart(2, '0').toUpperCase()}`).join(', ')}]b;`
+  if (!url) urlLine += ' // VITE_API_URL not set in .env'
+  return `${keyLine}\n${urlLine}`
 })
 
 async function copyKey(text) {
