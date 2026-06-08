@@ -221,15 +221,16 @@ def _subtype_label(category: int, subtype: int | None) -> str | None:
 def _enrich(e: ErrorReport) -> dict:
     code = e.error_code
     return {
-        "id":            e.id,
-        "timestamp":     e.timestamp.isoformat(),
-        "version":       e.version,
-        "error_hex":     f"0x{(code >> 16) & 0xFFFF:04X}_{code & 0xFFFF:04X}",
-        "build_flags":   e.build_flags,
-        "gopro_id":      e.gopro_id or 0,
-        "error_category": e.error_category or 0,
-        "error_subtype": e.error_subtype,
-        "error_index":   e.error_index,
+        "id":               e.id,
+        "timestamp":        e.timestamp.isoformat(),
+        "version":          e.version,
+        "error_hex":        f"0x{(code >> 16) & 0xFFFF:04X}_{code & 0xFFFF:04X}",
+        "build_flags":      e.build_flags,
+        "gopro_id":         e.gopro_id or 0,
+        "error_category":   e.error_category or 0,
+        "error_subtype":    e.error_subtype,
+        "error_index":      e.error_index,
+        "batch_id":         e.batch_id,
     }
 
 
@@ -273,6 +274,7 @@ _SORTABLE = {
     "error_index":      ErrorReport.error_index,
     "gopro_id":         ErrorReport.gopro_id,
     "build_flags":      ErrorReport.build_flags,
+    "batch_id":         ErrorReport.batch_id,
 }
 
 # ---------------------------------------------------------------------------
@@ -306,6 +308,7 @@ async def report_errors(
     if not key_record:
         raise HTTPException(status_code=403, detail="Invalid or inactive API key")
 
+    next_batch = (db.query(func.max(ErrorReport.batch_id)).scalar() or 0) + 1
     for code in body.errors:
         p = _parse(code)
         db.add(ErrorReport(
@@ -316,6 +319,7 @@ async def report_errors(
             error_category  = p["error_category"],
             error_subtype   = p["error_subtype"],
             error_index     = p["error_index"],
+            batch_id        = next_batch,
         ))
 
     db.commit()
@@ -327,15 +331,16 @@ async def report_errors(
 
 @admin.get("/errors", summary="Paginated, filterable error list")
 async def list_errors(
-    db: Session = Depends(get_db),
-    sort_by: str = "timestamp",
-    order:   str = "desc",
+    db:             Session = Depends(get_db),
+    sort_by:        str = "timestamp",
+    order:          str = "desc",
     version:        Optional[str] = None,
     error_category: Optional[str] = None,
     error_subtype:  Optional[int] = None,
     gopro_id:       Optional[int] = None,
-    limit:  int = 100,
-    offset: int = 0,
+    batch_id:       Optional[int] = None,
+    limit:          int = 100,
+    offset:         int = 0,
 ):
     q = db.query(ErrorReport)
 
@@ -347,6 +352,8 @@ async def list_errors(
         q = q.filter(ErrorReport.error_subtype == error_subtype)
     if gopro_id is not None:
         q = q.filter(ErrorReport.gopro_id == gopro_id)
+    if batch_id is not None:
+        q = q.filter(ErrorReport.batch_id == batch_id)
 
     col = _SORTABLE.get(sort_by, ErrorReport.timestamp)
     q = q.order_by(col.desc() if order == "desc" else col.asc())

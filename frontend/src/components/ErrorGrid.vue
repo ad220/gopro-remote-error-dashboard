@@ -43,6 +43,16 @@
       </button>
     </div>
 
+    <div v-if="activeBatch" class="px-7 py-2 bg-zinc-800/60 border-b border-zinc-700/60 flex items-center justify-between shrink-0">
+      <span class="text-[11px] text-zinc-400">
+        {{ total }} error{{ total !== 1 ? 's' : '' }} in this batch
+      </span>
+      <button @click="clearBatch"
+              class="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors">
+        ← back to all
+      </button>
+    </div>
+
     <!-- Table -->
     <div class="flex-1 overflow-auto">
       <div v-if="loading && !errors.length"
@@ -69,7 +79,9 @@
         </thead>
         <tbody>
           <tr v-for="e in errors" :key="e.id"
-              class="border-b border-zinc-900/80 hover:bg-zinc-900/80 transition-colors group text-slate-400 hover:text-slate-300">
+              @click="onRowClick(e)"
+              class="border-b border-zinc-900/80 hover:bg-zinc-900/80 transition-colors group text-slate-400 hover:text-slate-300 cursor-pointer"
+              :class="activeBatch?.focusedId === e.id ? 'bg-zinc-700/30 !text-zinc-200' : ''">
             <td class="px-8 py-2.5 whitespace-nowrap"
                 :title="e.timestamp">
               {{ relativeTime(e.timestamp) }}
@@ -251,6 +263,7 @@ const availableVersions = ref([])
 
 const filters = reactive({ version: '', error_category: '', error_subtype: '', gopro_id: '' })
 const hasFilters = computed(() => Object.values(filters).some(v => v !== ''))
+const activeBatch = ref(null) // { batchId, focusedId } | null
 
 watch(() => filters.error_category, () => { filters.error_subtype = '' })
 
@@ -263,6 +276,8 @@ async function fetchErrors() {
     if (params.error_category !== undefined) {
       params.error_category = `0x${Number(params.error_category).toString(16).toUpperCase()}`
     }
+    if (activeBatch.value) params.batch_id = activeBatch.value.batchId
+
     const data = await api.errors.list({
       sort_by: sortBy.value,
       order: order.value,
@@ -289,12 +304,16 @@ async function fetchVersions() {
 }
 
 // Reset to page 1 when filters or sort changes, then refetch
-watch([sortBy, order, () => filters.version, () => filters.error_category, () => filters.gopro_id],
-  () => { offset.value = 0 })
+watch(
+  [sortBy, order, activeBatch, () => filters.version, () => filters.error_category, () => filters.gopro_id],
+  () => { offset.value = 0 }
+)
 
 // Refetch whenever any query param changes
-watch([sortBy, order, offset, () => filters.version, () => filters.error_category, () => filters.gopro_id],
-  fetchErrors, { immediate: true })
+watch(
+  [sortBy, order, offset, activeBatch, () => filters.version, () => filters.error_category, () => filters.gopro_id],
+  fetchErrors, { immediate: true }
+)
 
 fetchVersions()
 
@@ -314,6 +333,16 @@ function clearFilters() {
   filters.error_category = ''
   filters.error_subtype  = ''
   filters.gopro_id       = ''
+}
+
+function onRowClick(e) {
+  offset.value = 0
+  activeBatch.value = { batchId: e.batch_id, focusedId: e.id }
+}
+
+function clearBatch() {
+  activeBatch.value = null
+  offset.value = 0
 }
 
 // --- Display helpers ---

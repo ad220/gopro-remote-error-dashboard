@@ -107,7 +107,7 @@ def _error_code(build: str, gopro_id: int, version: str) -> int:
 # HTTP helpers (stdlib only)
 # ---------------------------------------------------------------------------
 
-BASE = "http://localhost:8000"
+BASE = "http://localhost:8083"
 
 
 def _post(path: str, body=None, headers: dict | None = None):
@@ -133,7 +133,7 @@ def _get(path: str) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--url",  default="http://localhost:8000")
+    parser.add_argument("--url",  default="http://localhost:8083")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 

@@ -46,6 +46,7 @@ class ErrorReport(Base):
     error_subtype  = Column(Integer, index=True, nullable=True)
 
     error_index    = Column(Integer, index=True, nullable=True)
+    batch_id       = Column(Integer, index=True, nullable=True)
 
 
 def init_db() -> None:
