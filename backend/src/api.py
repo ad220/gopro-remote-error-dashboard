@@ -96,10 +96,9 @@ SUBTYPE_LABELS: dict[int, dict[int, str]] = {
 # ---------------------------------------------------------------------------
 
 _PRIVATE_NETS = [
-    ipaddress.ip_network("10.0.0.0/8"),
-    ipaddress.ip_network("172.16.0.0/12"),
-    ipaddress.ip_network("192.168.0.0/16"),
-    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("10.8.0.0/24"),
+    ipaddress.ip_network("192.168.1.0/24"),
+    ipaddress.ip_network("127.0.0.0/24"),
 ]
 
 

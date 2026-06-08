@@ -1,10 +1,13 @@
 # backend
 .venv/
 __pycache__/
-backend/errors.db
+backend/data
 
 # frontend
 node_modules/
 package-lock.json
 backend/static
 .env
+
+# deploy
+scripts/gopro-dashboard.service
